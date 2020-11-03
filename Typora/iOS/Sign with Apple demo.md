@@ -1,8 +1,10 @@
-# Sign with Apple demo
+# Sign in with Apple demo
 
 ## 1.用户点击了苹果登录，拉起登录
 
 ```swift
+import AuthenticationServices
+...
 @available(iOS 13.0, *)
     @IBAction func signInWithApple(_ sender: Any) {
         let appleIDProvider = ASAuthorizationAppleIDProvider()
