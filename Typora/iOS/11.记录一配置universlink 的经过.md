@@ -1,0 +1,71 @@
+# 记录一配置universlink 的经过
+
+### 1⃣️服务器配置
+
+后台在根目录下创建``.well-known``文件夹，放入`apple-app-site-association`文件：
+
+```json
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "[TeamId].[bundle_id]",
+                "paths": [ "*" ]
+            }
+        ]
+       }
+}
+```
+
+### 2⃣️
+
+![image-20200711100653389](https://tva1.sinaimg.cn/large/007S8ZIlly1ggmt3bj5gaj31jo0pu0xm.jpg)
+
+### 3⃣️Info.plish配置
+
+添加key `com.apple.developer.associated-domains`，数组类型，再把域名填写进去：
+
+![image-20200711101143728](https://tva1.sinaimg.cn/large/007S8ZIlly1ggmt8bfn3xj311203q3zs.jpg)
+
+
+
+---
+
+## 验证：
+
+在iOS的Notes.app里，新建一个地址，`[domain]/1`，长按，会有打开app的提示：
+
+<img src="https://tva1.sinaimg.cn/large/007S8ZIlly1ggmtbyj36rj30n00fodni.jpg" alt="image-20200711101514061" style="zoom:50%;" />
+
+---
+
+## 关于微信的适配
+
+app中，微信初始化设置时，填写刚刚配置的Universal Link 地址：
+
+```swift
+WXApi.registerApp(R.ThirdSDK.WexinAppId, universalLink: R.ThirdSDK.WexinUniversalLink)
+```
+
+此时，微信分享出去的内容，已经不再显示“未验证的app”了
+
+### 微信登录
+
+刚开始发现微信登录功能，从微信返回app后，没有登录成功。后来发现，走的是app下面的方法，把微信登录回调的逻辑，放在这里处理就好了：
+
+```swift
+func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        
+        /** 微信登录的回调
+         配置了universlink 后，微信登录的回掉就走这个了，不再走 application open url 那个了*/
+        if let url = userActivity.webpageURL {
+            if WXApi.handleOpen(url, delegate: WechatManager.share) { return true }
+        }
+        
+        return true
+    }
+```
+
+
+
